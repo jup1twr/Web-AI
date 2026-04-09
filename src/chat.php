@@ -4,17 +4,37 @@
     //configurar o cabeçalho para responder JSON
     header('Content-Type: application/json');
 
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+
+    try {
+        $dotenv->load();
+    } catch (Exception $e) {
+        die(json_encode(['error' => 'Arquivo .env não encontrado!']));
+    }
+
+
     //Configurar API
-    $apiKey = 'sk-3c35d9679d6d45569656caf0e8380dd0';
+    $apiKey = $_ENV['DEEPSEEK_API_KEY'];
 
     $client = OpenAI::factory()
     ->withApiKey($apiKey)
     ->withBaseUri('https://api.deepseek.com/v1')
     ->make();
 
+    // captura de mensagem no front
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+    $userMessage = $data['message'] ?? '';
+
     if(empty($userMessage)){
         echo json_encode(['error'=> 'Mensagem vazia ou inválida.']);
         exit;
+    }
+
+    // garantir que existe o histórico 
+    $memoryPath = __DIR__ . '/../memory/chat_history.json';
+    if (!is_dir(__DIR__ . '/../memory')) {
+        mk(__DIR__ . '/../memory', 0777, true);
     }
 
     //Histórico
@@ -35,8 +55,8 @@
             //System: quem define a regra do jogo. "Mestre"
             //content: moldo a personalidade do meu mentor
             'role' => 'system', 
-            'content' => 'Você é um mentor de Desenvolvimento Web especialista.'.
-                        'Ajude o aluno com PHP, HTML, CSS e JS'.
+            'content' => 'Você é um mentor de Cibersegurança e Ética.'.
+                        'Ajude o aluno com Python, C, C++, Java, JavaScript, SQL, Bash, PowerShell.'.
                         'Sempre mostre exemplos de códigos formatados com Markdown e explique a lógica de forma simples e didática'
         ];
 
@@ -61,7 +81,7 @@
 
         file_put_contents($memoryPath, json_encode($history, JSON_PRETTY_PRINT));
 
-        echo json_enconde(['reply' => $botReply]);
+        echo json_encode(['reply' => $botReply]);
 
     } catch(Exception $e) {
         echo json_encode(['error' => 'Erro na API: '. $e->getMessage()]);
