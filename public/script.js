@@ -66,8 +66,7 @@ function appendMessage(role,content) {
 
     div.appendChild(inner);
     container.appendChild(div);
-    
+
     container.scrollTo({top: container.scrollHeight, behavior:'smooth'});
 }
-
 

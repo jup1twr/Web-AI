@@ -46,10 +46,11 @@
     }
     // adicionar nova mensagem do usuário ao histórico
     $history[] = ['role' => 'user', 'content' => $userMessage];
+
 //Chamada pra IA
     try {
         //Definir o comportamento do mentor
-        $systemPrompt = [
+        $systemText = [
             //Protocolos: User: a pessoa que irá interagir
             //Assistant: a IA respondendo
             //System: quem define a regra do jogo. "Mestre"
@@ -57,8 +58,10 @@
             'role' => 'system', 
             'content' => 'Você é um mentor de Cibersegurança e Ética.'.
                         'Ajude o aluno com Python, C, C++, Java, JavaScript, SQL, Bash, PowerShell.'.
-                        'Sempre mostre exemplos de códigos formatados com Markdown e explique a lógica de forma simples e didática'
-        ];
+                        'Sempre mostre exemplos de códigos formatados com Markdown e explique a lógica de forma simples e didática'];
+        $fullprompt = "[INST] " . $systemText . " Histórico: " . json_encode($history) . " [/INST]";
+        $messages = array_merge([$systemPrompt], $history);
+
 
         //Mesclar o prompt do sistema com o histórico guardado
         $messages = array_merge([$systemPrompt], $history);
